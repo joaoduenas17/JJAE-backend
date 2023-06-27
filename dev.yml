@@ -1,0 +1,53 @@
+version: "3.0"
+services:
+  h_tierra_back:
+    build:
+      context: ./back_project 
+      args:
+        env_name: "dev"
+    image: h_tierra:dev
+    container_name: "h-tierra"
+    environment:
+      PYTHONUNBUFFERED: 1
+    env_file: env/dev.env
+    volumes:
+      - "./back_project/app/:/home/desarrollo"
+    ports:
+      - "8000:8000"
+    networks:
+      - h_tierra-net
+    stdin_open: true
+    tty: true
+    command: /bin/sh -c 'sleep 10 && python manage.py runserver 0.0.0.0:8000'
+
+
+  h_tierra_db:
+    image: postgres:12
+    stdin_open: true
+    tty: true
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5431:5432"
+    networks:
+      - h_tierra-net
+    env_file:
+      - env/dev.env
+
+
+  h_tierra_redis:
+    image: redis:5
+    networks:
+      - h_tierra-net
+    ports:
+      - "6379:6379"
+    env_file:
+      - env/dev.env
+    restart: unless-stopped   
+
+volumes:
+  db-data:
+
+networks:
+  h_tierra-net:
+    driver: "bridge"
